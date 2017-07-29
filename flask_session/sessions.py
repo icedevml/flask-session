@@ -11,6 +11,7 @@
 import sys
 import time
 import ulid
+import base64
 from datetime import datetime
 try:
     import cPickle as pickle
@@ -520,7 +521,7 @@ class SqlAlchemySessionInterface(SessionInterface):
             saved_session = None
         if saved_session:
             try:
-                val = saved_session.data
+                val = base64.b64decode(saved_session.data)
                 data = self.serializer.loads(want_bytes(val))
                 return self.session_class(data, sid=sid)
             except:
@@ -547,7 +548,7 @@ class SqlAlchemySessionInterface(SessionInterface):
         expires = self.get_expiration_time(app, session)
         val = self.serializer.dumps(dict(session))
         if saved_session:
-            saved_session.data = val
+            saved_session.data = base64.b64encode(val)
             saved_session.expiry = expires
             self.db.session.commit()
         else:
